@@ -1,0 +1,42 @@
+/*
+ * EXTERNAL COMPONENTS
+ *
+ * This is the place to include
+ * third party components.
+ */
+
+@import "compass/reset";
+@import "compass/utilities";
+@import "compass/css3";
+@import "susy";
+@import "breakpoint";
+
+/*
+ * TOOLS
+ *
+ * Useful functions and mixins.
+ */
+
+@import "tools/*";
+
+/*
+ * SETTINGS
+ *
+ * Globally-available variables and config.
+ */
+
+@import "settings/_vars";
+@import "settings/_colors";
+@import "settings/_grid";
+@import "settings/_breakpoints";
+@import "settings/_webfonts";
+@import "settings/_base";
+
+/*
+ * COMPONENTS
+ *
+ * This is the place where your scalable,
+ * modular scss lives.
+ */
+
+@import "components/*";

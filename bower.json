@@ -1,0 +1,11 @@
+{
+  "name": "modular-scale",
+  "private": true,
+  "dependencies": {
+    "modernizr": "~2.6.2",
+    "jquery": "~1.10.2",
+    "respondJS": "~1.4.2",
+    "gsap": "~1.13.1"
+  },
+  "devDependencies": {}
+}
