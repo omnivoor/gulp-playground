@@ -1,13 +1,14 @@
 {
-  "title": "modular-scale",
-  "version": "0.1.0",
+  "title": "tiziano-omnivoor",
+  "version": "1.0.0",
   "author": {
     "name": "Tiziano Di Turi",
     "email": "tiziano@omnivoor.be"
   },
   "devDependencies": {
-    "gulp-util": "~3.0.1",
     "gulp": "~3.8.8",
+    "gulp-util": "~3.0.1",
+    "gulp-load-plugins": "^0.7.0",
     "gulp-notify": "~2.0.0",
     "gulp-compass": "~1.3.2",
     "gulp-concat": "~2.4.1",

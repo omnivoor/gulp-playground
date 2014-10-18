@@ -1,126 +1,141 @@
-// plugins
-var gulp        = require('gulp'),
-    gutil       = require('gulp-util'),
-    notify      = require('gulp-notify'),
-    compass     = require('gulp-compass'),
-    concat      = require('gulp-concat'),
-    uglify      = require('gulp-uglify'),
-    bower       = require('main-bower-files'),
-    cache       = require('gulp-cache'),
-    imagemin    = require('gulp-imagemin'),
-    clean       = require('gulp-clean'),
-    htmlreplace = require('gulp-html-replace'),
-    rename      = require('gulp-rename'),
-    minifyCSS   = require('gulp-minify-css'),
-    minifyHTML  = require('gulp-minify-html')
-    w3cjs       = require('gulp-w3cjs');
+/*
+ * To start I declare several paths to use throughout the gulpfile.
+ * This means I only need to declare them in one place. For consistency
+ * make sure you always end your paths with a /
+ */
 
+var basePaths = {
+  src: 'app/',
+  dest: 'build/',
+  bower: 'bower_components/'
+};
 
-
-// Set up base paths
 var paths = {
-  styles  : 'app/css/**/*.scss',
-  scripts : 'app/js/src/**/*.js',
-  bower   : 'bower_components/**/*',
-  images  : 'app/assets/images/**/*'
+  styles: {
+    src: basePaths.src + 'css/src/',
+    dest: basePaths.src + 'css/build/'
+  },
+  scripts: {
+    src: basePaths.src + 'js/src/',
+    dest: basePaths.src + 'js/build/'
+  },
+  images: {
+    src: basePaths.src + 'assets/images/',
+    dest: basePaths.src + 'assets/'
+  }
+};
+
+var files = {
+  html: basePaths.src + '*.html',
+  bower: basePaths.bower + '**/*',
+  assets: basePaths.src + 'assets/**/*',
+  styles: paths.styles.src + '**/*.scss',
+  scripts: paths.scripts.src + '**/*.js'
 };
 
 
 
-// SASS task
+
+
+/*
+ * Here 'gulp' is defined along with 'gulp-util'. I also load
+ * in 'gulp-load-plugins'. This will search the package.json and
+ * install extra plugins.
+ */
+
+ var gulp    = require('gulp'),
+     gutil   = require('gulp-util'),
+     bower   = require('main-bower-files'),
+     htmlreplace = require('gulp-html-replace'),
+     minifyHTML = require('gulp-minify-html'),
+     minifyCSS = require('gulp-minify-css'),
+     plugins = require('gulp-load-plugins')();
+
+
+
+
+
+/*
+ * As from this point I declare my gulp tasks. There are two main tasks:
+ * 'gulp watch' and 'gulp build'. The former watches all our css and javascript
+ * and concatenates it, but keeps formatting intact so it's easy to debug.
+ * the latter makes a compressed copy ready to ship to a server.
+ */
+
 gulp.task('styles', function() {
-  gulp.src('app/css/src/base.scss')
-    .pipe(compass({
-      config_file: 'app/css/config.rb',
-      css: 'app/css/build',
-      sass: 'app/css/src',
+  gulp.src(files.styles)
+    .pipe(plugins.compass({
+      config_file: basePaths.src + 'css/config.rb',
+      sass: paths.styles.src,
+      css: paths.styles.dest,
       style: 'expanded',
       require: ['sass-globbing', 'susy', 'breakpoint']
     }))
-    .pipe(gulp.dest('app/css/build'))
-    .pipe(notify({
+    .pipe(gulp.dest(paths.styles.dest))
+    .pipe(plugins.notify({
       message: 'Styles task complete'
     }));
 });
 
-
-
-// Concat all bower files
-gulp.task('bower', function() {
-  gulp.src(bower())
-    .pipe(concat('bower.js'))
-    .pipe(gulp.dest('app/js/build'))
-    .pipe(notify({
-      message: 'Bower task complete'
-    }));
-});
-
-
-
-// Concat all javascript files
 gulp.task('scripts', function() {
-  gulp.src(paths.scripts)
-    .pipe(concat('src.js'))
-    .pipe(gulp.dest('app/js/build'))
-    .pipe(notify({
+  gulp.src(files.scripts)
+    .pipe(plugins.concat('src.js'))
+    .pipe(gulp.dest(paths.scripts.dest))
+    .pipe(plugins.notify({
       message: 'Scripts task complete'
     }));
 });
 
-
-
-// Optimize all images
-gulp.task('images', function() {
-  gulp.src(paths.images)
-    .pipe(cache(imagemin({
-      optimizationLevel: 3,
-      progressive: true,
-      interlaced: true
-    })))
-    .pipe(gulp.dest('app/assets/images'))
-    .pipe(notify({
-      message: 'Images task complete'
+gulp.task('bower', function() {
+  gulp.src(bower())
+    .pipe(plugins.concat('bower.js'))
+    .pipe(gulp.dest(paths.scripts.dest))
+    .pipe(plugins.notify({
+      message: 'Bower task complete'
     }));
 });
 
-// Clean
-gulp.task('clean', function () {
-  return gulp.src('./build', {read: false})
-    .pipe(clean());
+gulp.task('images', function() {
+  gulp.src(paths.images.src)
+    .pipe(plugins.cache(
+      plugins.imagemin({
+        optimizationLevel: 3,
+        progressive: true,
+        interlaced: true
+      })
+    ))
+    .pipe(gulp.dest(paths.images.dest));
 });
 
-
-
-// The DEFAULT task
-gulp.task('default', ['styles', 'scripts', 'bower', 'watch']);
-
-
-
-// The WATCH task
-gulp.task('watch', function() {
-  gulp.watch(paths.styles, ['styles']);
-  gulp.watch(paths.scripts, ['scripts']);
-  gulp.watch(paths.bower, ['bower']);
-});
-
-
-// The VALIDATE task
 gulp.task('validate', function() {
-  gulp.src('app/*.html')
-    .pipe(w3cjs());
+  gulp.src(files.html)
+    .pipe(plugins.w3cjs())
+    .pipe(plugins.notify({
+      message: 'Validate task complete'
+    }));
 });
 
+gulp.task('clean', function() {
+  return gulp.src(basePaths.dest, {read: false})
+    .pipe(plugins.clean());
+});
 
+/* The watch task */
+gulp.task('watch', function() {
+  gulp.watch(files.styles, ['styles']);
+  gulp.watch(files.scripts, ['scripts']);
+  gulp.watch(files.bower, ['bower']);
+});
 
-// The BUILD task
-gulp.task('build', ['clean'], function() {
-  gulp.src('app/.htaccess')
-    .pipe(gulp.dest('./build'));
+/* The build task */
+gulp.task('build', ['clean', 'images'], function() {
+  gulp.src(basePaths.src + '.htaccess')
+    .pipe(gulp.dest(basePaths.dest));
 
-  gulp.src('app/assets/**/*')
-    .pipe(gulp.dest('./build/assets'));
+  gulp.src(files.assets)
+    .pipe(gulp.dest(basePaths.dest + 'assets'));
 
-  gulp.src('app/*.html')
+  gulp.src(files.html)
     .pipe(htmlreplace({
       'css': 'css/base.min.css',
       'js' : 'js/build.min.js'
@@ -130,15 +145,18 @@ gulp.task('build', ['clean'], function() {
       comments: true,
       conditionals: true
     }))
-    .pipe(gulp.dest('./build'));
+    .pipe(gulp.dest(basePaths.dest));
 
-  gulp.src('app/css/build/*.css')
+  gulp.src(paths.styles.dest + '*.css')
     .pipe(minifyCSS())
-    .pipe(rename('base.min.css'))
-    .pipe(gulp.dest('./build/css'));
+    .pipe(plugins.rename('base.min.css'))
+    .pipe(gulp.dest(basePaths.dest + 'css'));
 
-  gulp.src('app/js/build/*.js')
-    .pipe(concat('build.min.js'))
-    .pipe(uglify())
-    .pipe(gulp.dest('./build/js'));
+  gulp.src(paths.scripts.dest + '*.js')
+    .pipe(plugins.concat('build.min.js'))
+    .pipe(plugins.uglify())
+    .pipe(gulp.dest(basePaths.dest + 'js'));
 });
+
+/* The default task */
+gulp.task('default', ['scripts', 'bower', 'styles', 'watch']);
