@@ -1,9 +1,9 @@
 {
-  "title": "tiziano-omnivoor",
+  "title": "",
   "version": "1.0.0",
   "author": {
-    "name": "Tiziano Di Turi",
-    "email": "tiziano@omnivoor.be"
+    "name": "",
+    "email": ""
   },
   "devDependencies": {
     "gulp": "~3.8.8",
